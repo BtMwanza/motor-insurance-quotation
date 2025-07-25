@@ -6,9 +6,9 @@ import VehicleTypePicker from './components/forms/vehicle-type-picker';
 import VehicleDetails from './components/forms/vehicle-details';
 import OwnerDetails from './components/forms/owner-details';
 import QuotationSummary from './components/forms/quotation-summary';
-import Quotation from './components/forms/quatation';
 import CoverageOptions from './components/forms/coverage-options';
 import SideQuotation from './components/forms/side-quotation';
+import { Car, FileText, User, ShieldCheck, ListChecks } from "lucide-react"; // Example icons
 
 export interface QuotationFormData {
   vehicleType: { type: "personal" | "commercial" | "taxi" | "" }
@@ -22,8 +22,8 @@ export interface QuotationFormData {
     sumInsured: string
     isNewImport: boolean
   }
-  driver: { age: string; licenseYears: string; claims: "yes" | "no"; claimFreeYears: string; previousClaims: string }
-  coverage: { type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "road-traffic-act-only" }
+  owner: { age: string; licenseYears: string; claims: "yes" | "no"; claimFreeYears: string; previousClaims: string }
+  coverage: { type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "road-traffic-act-only" | "" }
 }
 
 function App() {
@@ -40,14 +40,14 @@ function App() {
       sumInsured: "",
       isNewImport: false,
     },
-    driver: {
+    owner: {
       age: "",
       licenseYears: "",
       claims: "no",
       claimFreeYears: "0",
       previousClaims: "0",
     },
-    coverage: { type: "third-party-only" },
+    coverage: { type: "" },
   })
 
   const handleNext = (data: any) => {
@@ -63,23 +63,31 @@ function App() {
     setFormData((prev) => ({ ...prev, ...data }))
   }
 
-  const steps = ["Vehicle Type", "Vehicle Details", "Driver Details", "Coverage Options", "Summary"]
+  const steps = [
+    { label: "Vehicle Type", icon: <Car className="w-5 h-5" /> },
+    { label: "Vehicle Details", icon: <FileText className="w-5 h-5" /> },
+    { label: "Owner/Driver Details", icon: <User className="w-5 h-5" /> },
+    { label: "Coverage Options", icon: <ShieldCheck className="w-5 h-5" /> },
+    { label: "Summary", icon: <ListChecks className="w-5 h-5" /> },
+  ];
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
+    <main className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card className="h-full">
             <CardContent className="p-6">
               <Tabs value={String(step)} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-5">
-                  {steps.map((s, index) => (
+                <TabsList className="grid w-full h-full grid-cols-5">
+                  {steps.map((stepObj, index) => (
                     <TabsTrigger
-                      key={s}
+                      key={stepObj.label}
                       value={String(index)}
                       disabled={index > step}
+                      className="flex flex-col items-center gap-1"
                     >
-                      {s}
+                      <span>{stepObj.icon}</span>
+                      <span className="hidden md:inline">{stepObj.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -101,7 +109,7 @@ function App() {
                 </TabsContent>
                 <TabsContent value="2" className="mt-6">
                   <OwnerDetails
-                    data={formData.driver}
+                    data={formData.owner}
                     onNext={handleNext}
                     onBack={handleBack}
                     onUpdate={handleFormUpdate}

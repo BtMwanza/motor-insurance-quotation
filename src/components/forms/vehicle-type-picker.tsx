@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardTitle } from "../ui/card";
+import { CheckCircle } from "lucide-react";
 
 interface VehicleTypeSelectionProps {
   data: { type: "personal" | "commercial" | "taxi" | "" };
@@ -45,8 +46,8 @@ const VehicleTypePicker = ({ data, onNext, onUpdate }: VehicleTypeSelectionProps
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-4xl font-bold text-center">Vehicle Type</h2>
-      <p className="text-center text-lg text-muted-foreground">
+      <h2 className="text-2xl font-semibold">Vehicle Type</h2>
+      <p className="text-md text-muted-foreground">
         Please select the type of vehicle you would like insured by indicating
         with the options below.
       </p>
@@ -55,15 +56,16 @@ const VehicleTypePicker = ({ data, onNext, onUpdate }: VehicleTypeSelectionProps
           <Card
             key={type.id}
             className={cn(
-              "cursor-pointer overflow-hidden transition-all duration-200 flex items-center justify-center",
+              "cursor-pointer overflow-hidden transition-all duration-200 flex items-center justify-center relative",
               selectedType === type.id
-                ? "ring-2 ring-blue-500 ring-offset-2"
-                : ""
+                ? "ring-2 ring-primary border-primary"
+                : "hover:border-primary/60"
             )}
             onClick={() => handleTypeSelect(type.id)}
           >
+            {selectedType === type.id && <CheckCircle className="absolute top-2 right-2 text-primary size-4" />}
             <CardContent className={cn("p-4 text-foreground")}>
-              <CardTitle className="text-md">{type.name}</CardTitle>
+              <CardTitle className="text-lg">{type.name}</CardTitle>
             </CardContent>
           </Card>
         ))}

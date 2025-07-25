@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -22,13 +20,16 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
         // Adjust base rate based on coverage type
         switch (formData.coverage.type) {
             case "third-party-only":
-                basePremiumRate = 0.02 // 2% of sum insured
+                basePremiumRate = 0.02
                 break
             case "third-party-fire-theft":
-                basePremiumRate = 0.035 // 3.5% of sum insured
+                basePremiumRate = 0.035
                 break
             case "comprehensive":
-                basePremiumRate = 0.05 // 5% of sum insured
+                basePremiumRate = 0.05
+                break
+            case "road-traffic-act-only":
+                basePremiumRate = 0.05
                 break
         }
 
@@ -44,7 +45,6 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 break
             case "personal":
             default:
-                // No multiplier for personal use
                 break
         }
 
@@ -53,9 +53,9 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
             premium *= 1.2 // 20% surcharge for temporary cover
         }
 
-        // Driver age and experience adjustments
-        const age = Number.parseInt(formData.driver.age) || 0
-        const licenseYears = Number.parseInt(formData.driver.licenseYears) || 0
+        // Owner/Driver age and experience adjustments
+        const age = Number.parseInt(formData.owner.age) || 0
+        const licenseYears = Number.parseInt(formData.owner.licenseYears) || 0
 
         if (age > 0) {
             if (age < 21) {
@@ -71,33 +71,33 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
             premium *= 1.5 // 50% increase for new drivers
         }
 
-        // Claims history adjustment
-        if (formData.driver.claims === "yes") {
-            const claimsCount = Number.parseInt(formData.driver.previousClaims) || 1
-            premium *= 1 + claimsCount * 0.25 // 25% increase per claim
+        // Claims history adjustment, 25% increase per claim
+        if (formData.owner.claims === "yes") {
+            const claimsCount = Number.parseInt(formData.owner.previousClaims) || 1
+            premium *= 1 + claimsCount * 0.25
         }
 
         // No-Claim Discount (only for comprehensive coverage)
-        if (formData.coverage.type === "comprehensive" && formData.driver.claims === "no") {
-            const claimFreeYears = Number.parseInt(formData.driver.claimFreeYears) || 0
+        if (formData.coverage.type === "comprehensive" && formData.owner.claims === "no") {
+            const claimFreeYears = Number.parseInt(formData.owner.claimFreeYears) || 0
             let discount = 0
 
             switch (claimFreeYears) {
                 case 1:
-                    discount = 0.15 // 15%
+                    discount = 0.15
                     break
                 case 2:
-                    discount = 0.25 // 25%
+                    discount = 0.25
                     break
                 case 3:
-                    discount = 0.4 // 40%
+                    discount = 0.4
                     break
                 case 4:
-                    discount = 0.6 // 60%
+                    discount = 0.6
                     break
                 case 5:
                 default:
-                    if (claimFreeYears >= 5) discount = 0.65 // 65%
+                    if (claimFreeYears >= 5) discount = 0.65
                     break
             }
 
@@ -115,8 +115,8 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
 
     // Calculate No-Claim Discount
     const getNoClaimDiscount = () => {
-        if (formData.coverage.type !== "comprehensive" || formData.driver.claims === "yes") return 0
-        const claimFreeYears = Number.parseInt(formData.driver.claimFreeYears) || 0
+        if (formData.coverage.type !== "comprehensive" || formData.owner.claims === "yes") return 0
+        const claimFreeYears = Number.parseInt(formData.owner.claimFreeYears) || 0
         switch (claimFreeYears) {
             case 1:
                 return 15
@@ -156,9 +156,9 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
         },
         {
             icon: User,
-            title: "Driver Details",
-            completed: !!(formData.driver.age && formData.driver.licenseYears),
-            data: formData.driver.age ? `Age ${formData.driver.age}, ${formData.driver.licenseYears} years license` : null,
+            title: "Owner's Details",
+            completed: !!(formData.owner.age && formData.owner.licenseYears),
+            data: formData.owner.age ? `Age ${formData.owner.age}, ${formData.owner.licenseYears} years license` : null,
         },
         {
             icon: Shield,
@@ -180,17 +180,17 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
         <Card className="w-full h-full">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
+                    <Shield className="h-5 w-5 text-primary" />
                     Your Quote
                 </CardTitle>
                 <CardDescription>Real-time estimate based on your information</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
                 {/* Quote Amount */}
-                <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border">
+                <div className="text-center p-6 bg-background rounded-lg border border-border">
                     {hasMinimumData ? (
                         <>
-                            <div className="text-3xl font-bold text-blue-600">
+                            <div className="text-3xl font-bold text-primary">
                                 ZMW {quote.toLocaleString("en-US", { maximumFractionDigits: 0 })}
                             </div>
                             <div className="text-sm text-muted-foreground mt-1">
@@ -198,14 +198,14 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                             </div>
                             {formData.vehicle.isNewImport && (
                                 <div className="flex items-center justify-center gap-1 mt-2">
-                                    <AlertTriangle className="h-3 w-3 text-amber-600" />
-                                    <span className="text-xs text-amber-600 font-medium">Temporary Cover (20% surcharge)</span>
+                                    <AlertTriangle className="h-3 w-3 text-destructive" />
+                                    <span className="text-xs text-destructive font-medium">Temporary Cover (20% surcharge)</span>
                                 </div>
                             )}
                             {noClaimDiscount > 0 && (
                                 <div className="flex items-center justify-center gap-1 mt-2">
-                                    <Percent className="h-3 w-3 text-green-600" />
-                                    <span className="text-xs text-green-600 font-medium">
+                                    <Percent className="h-3 w-3 text-primary" />
+                                    <span className="text-xs text-primary font-medium">
                                         {noClaimDiscount}% No-Claim Discount Applied
                                     </span>
                                 </div>
@@ -222,7 +222,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 <Separator />
 
                 {/* Progress Steps */}
-                <div className="space-y-4">
+                <div className="">
                     <h3 className="font-medium text-sm">Information Collected</h3>
                     {steps.map((step, index) => {
                         const Icon = step.icon
@@ -231,11 +231,12 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                         return (
                             <div
                                 key={step.title}
-                                className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${isActive ? "bg-blue-50 border border-blue-200" : ""}`}
+                                className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${isActive ? "bg-muted border border-primary/30" : "bg-card"
+                                    }`}
                             >
                                 <div className="flex-shrink-0 mt-0.5">
                                     {step.completed ? (
-                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                        <CheckCircle className="h-4 w-4 text-primary" />
                                     ) : (
                                         <Circle className="h-4 w-4 text-muted-foreground" />
                                     )}
@@ -268,27 +269,21 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                     <span>Sum Insured</span>
                                     <span>ZMW {Number.parseInt(formData.vehicle.sumInsured || "0").toLocaleString()}</span>
                                 </div>
-                                {/*    {formData.vehicle.usage && (
-                                    <div className="flex justify-between">
-                                        <span>Vehicle Usage</span>
-                                        <span className="capitalize">{formData.vehicle.usage}</span>
-                                    </div>
-                                )} */}
                                 {formData.vehicle.isNewImport && (
-                                    <div className="flex justify-between text-amber-600">
+                                    <div className="flex justify-between text-destructive">
                                         <span>New Import Surcharge</span>
                                         <span>+20%</span>
                                     </div>
                                 )}
-                                {formData.driver.age && (
+                                {formData.owner.age && (
                                     <div className="flex justify-between">
-                                        <span>Driver Profile</span>
+                                        <span>Owner's Profile</span>
                                         <span>
-                                            {Number.parseInt(formData.driver.age) < 21
+                                            {Number.parseInt(formData.owner.age) < 21
                                                 ? "Young Driver"
-                                                : Number.parseInt(formData.driver.age) < 25
+                                                : Number.parseInt(formData.owner.age) < 25
                                                     ? "Under 25"
-                                                    : Number.parseInt(formData.driver.age) > 65
+                                                    : Number.parseInt(formData.owner.age) > 65
                                                         ? "Senior"
                                                         : "Standard"}
                                         </span>
@@ -301,7 +296,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                     </div>
                                 )}
                                 {noClaimDiscount > 0 && (
-                                    <div className="flex justify-between text-green-600">
+                                    <div className="flex justify-between text-primary">
                                         <span>No-Claim Discount</span>
                                         <span>-{noClaimDiscount}%</span>
                                     </div>
@@ -315,10 +310,10 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 {formData.vehicle.isNewImport && (
                     <>
                         <Separator />
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                             <div className="flex items-start gap-2">
-                                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                <div className="text-xs text-amber-700">
+                                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                                <div className="text-xs text-destructive">
                                     <p className="font-medium mb-1">Temporary Cover Notice</p>
                                     <p>Registration with RTSA required within 30 days to maintain coverage.</p>
                                 </div>

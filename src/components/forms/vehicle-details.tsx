@@ -5,8 +5,9 @@ import { Button } from "../ui/button";
 import { VEHICLE_MAKES } from "@/lib/vehicles";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
+import { vehicleValidation } from "@/lib/validation";
 
-interface VehicleDetails {
+export interface VehicleDetails {
   make: string
   model: string
   year: string
@@ -24,6 +25,9 @@ interface VehicleDetailsFormProps {
   onUpdate?: (data: { vehicle: VehicleDetails }) => void
 }
 
+const currentYear = new Date().getFullYear();
+
+
 const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormProps) => {
   const [vehicleData, setVehicleData] = useState({
     make: data.make || "",
@@ -34,47 +38,74 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
     engineNumber: data.engineNumber || "",
     sumInsured: data.sumInsured || "",
     isNewImport: data.isNewImport || false,
-  })
+  });
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target
-    const updatedData = { ...vehicleData, [id]: value }
-    setVehicleData(updatedData)
+    const { id, value } = e.target;
+    const updatedData = { ...vehicleData, [id]: value };
+    setVehicleData(updatedData);
     if (onUpdate) {
-      onUpdate({ vehicle: updatedData })
+      onUpdate({ vehicle: updatedData });
     }
-  }
+    setErrors((prev) => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
+  };
 
   const handleSelectChange = (field: string, value: string) => {
-    const updatedData = { ...vehicleData, [field]: value }
-    setVehicleData(updatedData)
+    const updatedData = { ...vehicleData, [field]: value };
+    setVehicleData(updatedData);
+    setErrors((prev) => {
+      const { [field]: _, ...rest } = prev;
+      return rest;
+    });
     if (onUpdate) {
-      onUpdate({ vehicle: updatedData })
+      onUpdate({ vehicle: updatedData });
     }
-  }
+    setErrors((prev) => {
+      const { [field]: _, ...rest } = prev;
+      return rest;
+    });
+  };
 
   const handleCheckboxChange = (checked: boolean) => {
-    const updatedData = { ...vehicleData, isNewImport: checked }
-    // Clear plate number if it's a new import
+    const updatedData = { ...vehicleData, isNewImport: checked };
     if (checked) {
-      updatedData.plateNumber = ""
+      setErrors((prev) => {
+        const { plateNumber, ...rest } = prev;
+        return rest;
+      });
     }
-    setVehicleData(updatedData)
+    setVehicleData(updatedData);
     if (onUpdate) {
-      onUpdate({ vehicle: updatedData })
+      onUpdate({ vehicle: updatedData });
     }
-  }
+    setErrors((prev) => {
+      const { plateNumber, ...rest } = prev;
+      return rest;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onNext({ vehicle: vehicleData })
-  }
+    e.preventDefault();
+    const validationErrors = vehicleValidation(vehicleData, currentYear);
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length === 0) {
+      onNext({ vehicle: vehicleData });
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-semibold">1. Vehicle Details</h2>
+      <h2 className="text-2xl font-semibold">Vehicle Details</h2>
 
-      <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <Checkbox id="isNewImport" checked={vehicleData.isNewImport} onCheckedChange={handleCheckboxChange} />
+      <div className="flex items-center space-x-2 p-4 bg-accent/50 rounded-lg border border-secondary">
+        <Checkbox id="isNewImport" checked={vehicleData.isNewImport} onCheckedChange={handleCheckboxChange} className="bg-background" />
         <Label htmlFor="isNewImport" className="text-sm font-medium">
           This is a newly imported vehicle (not yet registered with RTSA)
         </Label>
@@ -95,22 +126,28 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
               ))}
             </SelectContent>
           </Select>
+          {errors.make && <p className="text-xs text-destructive">{errors.make}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="model">Model</Label>
           <Input id="model" value={vehicleData.model} onChange={handleChange} required />
+          {errors.model && <p className="text-xs text-destructive">{errors.model}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="year">Year</Label>
           <Input
             id="year"
-            type="number"
+            type="text"
             value={vehicleData.year}
             onChange={handleChange}
             required
             min="1900"
-            max={new Date().getFullYear().toString()}
+            max={currentYear.toString()}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
           />
+          {errors.year && <p className="text-xs text-destructive">{errors.year}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="plateNumber">
@@ -124,8 +161,9 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
             required={!vehicleData.isNewImport}
             disabled={vehicleData.isNewImport}
             placeholder={vehicleData.isNewImport ? "Will be updated after registration" : "e.g. ABC1234"}
-            maxLength={7}
+            maxLength={10}
           />
+          {errors.plateNumber && <p className="text-xs text-destructive">{errors.plateNumber}</p>}
           {!vehicleData.isNewImport && (
             <p className="text-xs text-muted-foreground">Required for policy issuance and road tax certificate</p>
           )}
@@ -133,27 +171,31 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
         <div className="space-y-2">
           <Label htmlFor="chassisNumber">Chassis Number</Label>
           <Input id="chassisNumber" value={vehicleData.chassisNumber} onChange={handleChange} required maxLength={17} />
+          {errors.chassisNumber && <p className="text-xs text-destructive">{errors.chassisNumber}</p>}
           <p className="text-xs text-muted-foreground">Found on vehicle registration book or vehicle body</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="engineNumber">Engine Number</Label>
           <Input id="engineNumber" value={vehicleData.engineNumber} onChange={handleChange} required maxLength={17} />
+          {errors.engineNumber && <p className="text-xs text-destructive">{errors.engineNumber}</p>}
           <p className="text-xs text-muted-foreground">Found on vehicle registration book or engine block</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="sumInsured">Sum Insured (ZMW)</Label>
           <Input
             id="sumInsured"
-            type="number"
+            type="text"
             value={vehicleData.sumInsured}
             onChange={handleChange}
             required
             min="1000"
             placeholder="e.g. 150000"
+            inputMode="numeric"
+            pattern="[0-9]*"
           />
+          {errors.sumInsured && <p className="text-xs text-destructive">{errors.sumInsured}</p>}
           <p className="text-xs text-muted-foreground">Current market value of your vehicle</p>
         </div>
-
       </div>
 
       {vehicleData.isNewImport && (
