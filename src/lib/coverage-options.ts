@@ -6,6 +6,11 @@ export interface CoverageOption {
     description: string;
     bullets: string[];
 }
+export interface CoveragePeriodOptions {
+    value: string;
+    label: string;
+    description: string;
+}
 
 export const COVERAGE_OPTIONS: CoverageOption[] = [
     {
@@ -53,17 +58,28 @@ export const COVERAGE_OPTIONS: CoverageOption[] = [
             "No-Claim Discount eligible",
         ],
     },
+];
+
+
+export const COVERAGE_PERIOD_OPTIONS: CoveragePeriodOptions[] = [
     {
-        value: "road-traffic-act-only",
-        title: "Road Traffic Act Only",
-        badge: "Statutory Minimum",
-        badgeClass: "text-xs bg-green-50 text-green-700 px-2 py-1 rounded font-semibold",
-        description:
-            "This policy covers liability for Third Party Personal Injuries or Death. For any vehicle, this is the minimum cover required by the Road Traffic Act.",
-        bullets: [
-            "Third-party bodily injury or death",
-            "Meets legal requirements for public roads",
-            "No own vehicle or property damage coverage",
-        ],
+        value: "quarterly",
+        label: "Quarterly (3 months)",
+        description: "Pay every 3 months + 2% admin fee",
+    },
+    {
+        value: "semi-annual",
+        label: "Semi-Annual (6 months)",
+        description: "Pay every 6 months + 1% admin fee",
+    },
+    {
+        value: "three-quarters",
+        label: "Three Quarters (9 months)",
+        description: "Pay for 9 months + 0.5% admin fee",
+    },
+    {
+        value: "annual",
+        label: "Annual (12 months)",
+        description: "Pay once yearly - 3% discount",
     },
 ];

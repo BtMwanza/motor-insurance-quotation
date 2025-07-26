@@ -160,10 +160,10 @@ const OwnerDetails = ({ data, onNext, onBack, onUpdate }: OwnerDetailsFormProps)
       </div>
 
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="min-w-34">
           Back
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="submit" className="min-w-34">Next</Button>
       </div>
     </form>
   );

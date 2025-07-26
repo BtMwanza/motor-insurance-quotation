@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { COVERAGE_OPTIONS } from "@/lib/coverage-options"; // <-- import the data
+import { COVERAGE_OPTIONS, COVERAGE_PERIOD_OPTIONS } from "@/lib/coverage-options"; // <-- import the data
 import { CheckCircle } from "lucide-react";
+import { Label } from "../ui/label";
+import { cn } from "@/lib/utils";
 
 interface CoverageOptions {
-  type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "road-traffic-act-only" | "";
+  type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "";
+  period: "quarterly" | "semi-annual" | "three-quarters" | "annual" | "";
 }
 
 interface CoverageOptionsFormProps {
@@ -25,16 +28,30 @@ const CoverageOptions = ({
     type:
       data.type === "third-party-only" ||
         data.type === "third-party-fire-theft" ||
-        data.type === "comprehensive" ||
-        data.type === "road-traffic-act-only"
+        data.type === "comprehensive"
         ? data.type
         : "",
+
+    period: data.period || "",
   })
 
   const handleCardSelect = (value: string) => {
+    // Toggle selection
     const updatedData = {
       ...coverageData,
-      type: value as CoverageOptions["type"],
+      type: coverageData.type === value ? "" : (value as CoverageOptions["type"]),
+    }
+    setCoverageData(updatedData)
+    if (onUpdate) {
+      onUpdate({ coverage: updatedData })
+    }
+  }
+
+  const handlePaymentPeriodChange = (value: string) => {
+    // Toggle selection
+    const updatedData = {
+      ...coverageData,
+      period: coverageData.period === value ? "" : (value as CoverageOptions["period"]),
     }
     setCoverageData(updatedData)
     if (onUpdate) {
@@ -83,11 +100,41 @@ const CoverageOptions = ({
 
         </div>
       </div>
+
+      <div className="space-y-4 mt-6">
+        <div className="space-y-2">
+          <Label>Payment Period</Label>
+          <div className="grid gap-3 md:grid-cols-2">
+            {COVERAGE_PERIOD_OPTIONS.map(option => (
+              <Card
+                key={option.value}
+                className={cn("flex space-x-2 p-4 border rounded-lg cursor-pointer transition relative", coverageData.period === option.value ? "border-primary ring-2 ring-primary" : "hover:border-primary/60")}
+                tabIndex={0}
+                role="button"
+                aria-pressed={coverageData.period === option.value}
+                onClick={() => handlePaymentPeriodChange(option.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter" || e.key === " ") handlePaymentPeriodChange(option.value)
+                }}
+              >
+                {coverageData.period === option.value && (
+                  <CheckCircle className="text-primary absolute top-2 right-2 size-4" size={20} />
+                )}
+                <div className="">
+                  <Label className="font-medium">{option.label}</Label>
+                  <p className="text-sm text-muted-foreground">{option.description}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="min-w-34">
           Back
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="submit" className="min-w-34">Next</Button>
       </div>
     </form>
   );

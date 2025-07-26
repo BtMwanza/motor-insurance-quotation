@@ -104,8 +104,8 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-2xl font-semibold">Vehicle Details</h2>
 
-      <div className="flex items-center space-x-2 p-4 bg-accent/50 rounded-lg border border-secondary">
-        <Checkbox id="isNewImport" checked={vehicleData.isNewImport} onCheckedChange={handleCheckboxChange} className="bg-background" />
+      <div className="flex items-center space-x-2 p-4 rounded-lg border border-primary/20">
+        <Checkbox id="isNewImport" checked={vehicleData.isNewImport} onCheckedChange={handleCheckboxChange} />
         <Label htmlFor="isNewImport" className="text-sm font-medium">
           This is a newly imported vehicle (not yet registered with RTSA)
         </Label>
@@ -151,7 +151,7 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
         </div>
         <div className="space-y-2">
           <Label htmlFor="plateNumber">
-            Plate Number (Registration Number)
+            Plate Number
             {vehicleData.isNewImport && <span className="text-muted-foreground"> - Optional for new imports</span>}
           </Label>
           <Input
@@ -211,10 +211,10 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
       )}
 
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="min-w-34">
           Back
         </Button>
-        <Button type="submit" disabled={!vehicleData.make}>
+        <Button type="submit" disabled={!vehicleData.make} className="min-w-34">
           Next
         </Button>
       </div>

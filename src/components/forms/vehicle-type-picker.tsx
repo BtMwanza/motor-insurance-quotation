@@ -29,9 +29,11 @@ const VehicleTypePicker = ({ data, onNext, onUpdate }: VehicleTypeSelectionProps
   ];
 
   const handleTypeSelect = (typeId: string) => {
-    setSelectedType(typeId)
+    // Toggle selection
+    const updatedData = { type: typeId === selectedType ? "" : typeId };
+    setSelectedType(updatedData.type);
     if (onUpdate) {
-      onUpdate({ vehicleType: { type: typeId } })
+      onUpdate({ vehicleType: { type: updatedData.type } })
     }
   }
 
@@ -71,7 +73,7 @@ const VehicleTypePicker = ({ data, onNext, onUpdate }: VehicleTypeSelectionProps
         ))}
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={!selectedType}>
+        <Button type="submit" disabled={!selectedType} className="min-w-34">
           Next
         </Button>
       </div>

@@ -7,11 +7,13 @@ import { Badge } from "../ui/badge";
 interface QuotationSummaryProps {
   formData: QuotationFormData;
   onBack: () => void;
+  handleExportImage: () => Promise<void>
 }
 
 const QuotationSummary = ({
   formData,
   onBack,
+  handleExportImage,
 }: QuotationSummaryProps) => {
   return (
     <div className="space-y-2">
@@ -110,11 +112,12 @@ const QuotationSummary = ({
       </Card>
 
 
-      <div className="flex flex-col gap-2">
-        <Button>Proceed to Payment</Button>
-        <Button variant="outline" onClick={onBack}>
+      <div className="flex items-center justify-between gap-2">
+
+        <Button variant="outline" onClick={onBack} className="min-w-34">
           Back
         </Button>
+        <Button onClick={handleExportImage} className="min-w-34">Download Quote</Button>
       </div>
     </div>
   );

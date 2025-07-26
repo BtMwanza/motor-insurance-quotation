@@ -9,6 +9,7 @@ import QuotationSummary from './components/forms/quotation-summary';
 import CoverageOptions from './components/forms/coverage-options';
 import SideQuotation from './components/forms/side-quotation';
 import { Car, FileText, User, ShieldCheck, ListChecks } from "lucide-react"; // Example icons
+import html2canvas from 'html2canvas-pro';
 
 export interface QuotationFormData {
   vehicleType: { type: "personal" | "commercial" | "taxi" | "" }
@@ -23,7 +24,10 @@ export interface QuotationFormData {
     isNewImport: boolean
   }
   owner: { age: string; licenseYears: string; claims: "yes" | "no"; claimFreeYears: string; previousClaims: string }
-  coverage: { type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "road-traffic-act-only" | "" }
+  coverage: {
+    type: "third-party-only" | "third-party-fire-theft" | "comprehensive" | "";
+    period: "quarterly" | "semi-annual" | "three-quarters" | "annual" | "";
+  }
 }
 
 function App() {
@@ -47,7 +51,7 @@ function App() {
       claimFreeYears: "0",
       previousClaims: "0",
     },
-    coverage: { type: "" },
+    coverage: { type: "", period: "" },
   })
 
   const handleNext = (data: any) => {
@@ -70,6 +74,23 @@ function App() {
     { label: "Coverage Options", icon: <ShieldCheck className="w-5 h-5" /> },
     { label: "Summary", icon: <ListChecks className="w-5 h-5" /> },
   ];
+
+  // download image
+  const handleExportImage = async () => {
+
+    try {
+      const card = document.getElementById("quotation-card");
+      if (card) {
+        const canvas = await html2canvas(card);
+        const link = document.createElement("a");
+        link.download = "quotation.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      }
+    } catch (error) {
+      console.log("Error downloading image:", error);
+    }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
@@ -127,6 +148,7 @@ function App() {
                   <QuotationSummary
                     formData={formData}
                     onBack={handleBack}
+                    handleExportImage={handleExportImage}
                   />
                 </TabsContent>
 

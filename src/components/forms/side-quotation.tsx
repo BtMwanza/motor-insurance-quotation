@@ -4,15 +4,19 @@ import { Separator } from "@/components/ui/separator"
 import { CheckCircle, Circle, Car, User, Shield, FileText, Percent, AlertTriangle } from "lucide-react"
 import type { QuotationFormData } from "@/App"
 
+
 interface SideQuotationProps {
     formData: QuotationFormData
     currentStep: number
 }
 
 export default function SideQuotation({ formData, currentStep }: SideQuotationProps) {
+
+
+
     const calculateQuote = () => {
         const sumInsured = Number.parseInt(formData.vehicle.sumInsured) || 0
-        if (sumInsured === 0) return 0
+        if (sumInsured === 0) return { amount: 0, period: "annual", adminFee: 0 }
 
         // Base premium rates as percentage of sum insured
         let basePremiumRate = 0.03 // 3% for third-party-only
@@ -26,9 +30,6 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 basePremiumRate = 0.035
                 break
             case "comprehensive":
-                basePremiumRate = 0.05
-                break
-            case "road-traffic-act-only":
                 basePremiumRate = 0.05
                 break
         }
@@ -53,7 +54,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
             premium *= 1.2 // 20% surcharge for temporary cover
         }
 
-        // Owner/Driver age and experience adjustments
+        // Owner/owner age and experience adjustments
         const age = Number.parseInt(formData.owner.age) || 0
         const licenseYears = Number.parseInt(formData.owner.licenseYears) || 0
 
@@ -68,7 +69,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
         }
 
         if (licenseYears < 2) {
-            premium *= 1.5 // 50% increase for new drivers
+            premium *= 1.5 // 50% increase for new owners
         }
 
         // Claims history adjustment, 25% increase per claim
@@ -107,7 +108,40 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
             premium = thirdPartyPortion + ownDamagePortion * (1 - discount)
         }
 
-        return Math.max(500, premium) // Minimum premium of ZMW 500
+        // Apply payment period adjustments - TRUE PROPORTIONAL METHOD
+        let finalPremium = premium
+        let periodMultiplier = 1
+
+        switch (formData.coverage.period) {
+            case "quarterly":
+                periodMultiplier = 0.25 // Exactly 25% of annual
+                break
+            case "semi-annual":
+                periodMultiplier = 0.5 // Exactly 50% of annual
+                break
+            case "three-quarters":
+                periodMultiplier = 0.75 // Exactly 75% of annual
+                break
+            case "annual":
+                periodMultiplier = 1 // Full annual premium
+                // Optional: small discount for paying annually (2-5%)
+                finalPremium = premium * 0.98 // 2% discount
+                break
+            default:
+                periodMultiplier = 1
+                break
+        }
+
+        if (formData.coverage.period !== "annual") {
+            finalPremium = premium * periodMultiplier
+        }
+
+        return {
+            amount: Math.max(125 * periodMultiplier, finalPremium), // Minimum scales with period
+            period: formData.coverage.period,
+            adminFee: 0, // No admin fees in proportional model
+            annualEquivalent: premium,
+        }
     }
 
     const quote = calculateQuote()
@@ -174,16 +208,34 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
         },
     ]
 
-    const noClaimDiscount = getNoClaimDiscount()
+    const noClaimDiscount = getNoClaimDiscount();
+
+    const getPeriodLabel = (period: string) => {
+        switch (period) {
+            case "quarterly":
+                return "3 months"
+            case "semi-annual":
+                return "6 months"
+            case "three-quarters":
+                return "9 months"
+            case "annual":
+                return "12 months"
+            default:
+                return "annual"
+        }
+    }
 
     return (
-        <Card className="w-full h-full">
+        <Card id="quotation-card" className="w-full h-full">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Your Quote
+                <CardTitle className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        Your Quote
+                    </div>
+                    {new Date().toLocaleDateString('en-GB')}
                 </CardTitle>
-                <CardDescription>Real-time estimate based on your information</CardDescription>
+                <CardDescription>Real-time calculation based on your information. Complete steps to get the final premium</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Quote Amount */}
@@ -191,21 +243,37 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                     {hasMinimumData ? (
                         <>
                             <div className="text-3xl font-bold text-primary">
-                                ZMW {quote.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                                ZMW {quote.amount.toLocaleString("en-US", { maximumFractionDigits: 0 })}
                             </div>
                             <div className="text-sm text-muted-foreground mt-1">
-                                {formData.vehicle.isNewImport ? "Temporary cover premium" : "Estimated annual premium"}
+                                {getPeriodLabel(quote.period)} premium
+                                {formData.coverage.period !== "annual" && (
+                                    <span className="block text-xs">
+                                        (Annual equivalent: ZMW{" "}
+                                        {quote.annualEquivalent?.toLocaleString("en-US", { maximumFractionDigits: 0 })})
+                                    </span>
+                                )}
                             </div>
+                            {quote.adminFee > 0 && (
+                                <div className="text-xs text-amber-600 mt-1">
+                                    Includes ZMW {quote.adminFee.toLocaleString("en-US", { maximumFractionDigits: 0 })} admin fee
+                                </div>
+                            )}
+                            {formData.vehicle.isNewImport ? (
+                                <div className="text-sm text-muted-foreground mt-1">Temporary cover premium</div>
+                            ) : (
+                                <div className="text-sm text-muted-foreground mt-1">Estimated annual premium</div>
+                            )}
                             {formData.vehicle.isNewImport && (
                                 <div className="flex items-center justify-center gap-1 mt-2">
-                                    <AlertTriangle className="h-3 w-3 text-destructive" />
-                                    <span className="text-xs text-destructive font-medium">Temporary Cover (20% surcharge)</span>
+                                    <AlertTriangle className="h-3 w-3 text-amber-600" />
+                                    <span className="text-xs text-amber-600 font-medium">Temporary Cover (20% surcharge)</span>
                                 </div>
                             )}
                             {noClaimDiscount > 0 && (
                                 <div className="flex items-center justify-center gap-1 mt-2">
-                                    <Percent className="h-3 w-3 text-primary" />
-                                    <span className="text-xs text-primary font-medium">
+                                    <Percent className="h-3 w-3 text-green-600" />
+                                    <span className="text-xs text-green-600 font-medium">
                                         {noClaimDiscount}% No-Claim Discount Applied
                                     </span>
                                 </div>
@@ -269,6 +337,12 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                     <span>Sum Insured</span>
                                     <span>ZMW {Number.parseInt(formData.vehicle.sumInsured || "0").toLocaleString()}</span>
                                 </div>
+                                {formData.vehicleType.type && (
+                                    <div className="flex justify-between">
+                                        <span>Vehicle Usage</span>
+                                        <span className="capitalize">{formData.vehicleType.type}</span>
+                                    </div>
+                                )}
                                 {formData.vehicle.isNewImport && (
                                     <div className="flex justify-between text-destructive">
                                         <span>New Import Surcharge</span>
@@ -277,10 +351,10 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                 )}
                                 {formData.owner.age && (
                                     <div className="flex justify-between">
-                                        <span>Owner's Profile</span>
+                                        <span>owner Profile</span>
                                         <span>
                                             {Number.parseInt(formData.owner.age) < 21
-                                                ? "Young Driver"
+                                                ? "Young owner"
                                                 : Number.parseInt(formData.owner.age) < 25
                                                     ? "Under 25"
                                                     : Number.parseInt(formData.owner.age) > 65
@@ -296,9 +370,21 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                     </div>
                                 )}
                                 {noClaimDiscount > 0 && (
-                                    <div className="flex justify-between text-primary">
+                                    <div className="flex justify-between">
                                         <span>No-Claim Discount</span>
                                         <span>-{noClaimDiscount}%</span>
+                                    </div>
+                                )}
+                                {formData.coverage.period && (
+                                    <div className="flex justify-between">
+                                        <span>Payment Period</span>
+                                        <span>{getPeriodLabel(formData.coverage.period)}</span>
+                                    </div>
+                                )}
+                                {formData.coverage.period === "annual" && (
+                                    <div className="flex justify-between text-secondary">
+                                        <span>Annual Payment Discount</span>
+                                        <span>-2%</span>
                                     </div>
                                 )}
                             </div>
