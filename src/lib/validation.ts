@@ -1,7 +1,8 @@
 import type { OwnerDetails } from "@/components/forms/owner-details";
 import type { VehicleDetails } from "@/components/forms/vehicle-details";
 
-const PLATE_REGEX = /^(?:[A-Z]{3}\d{4}|GRZ\s?\d{1,4}|G\d{1,4}|D\d{1,4}|ZP\d{1,4}|ZAF\d{1,4}|ZNS\d{1,4}|ZRA\d{1,4})$/i;
+const PLATE_REGEX = /^(?:[A-Z]{1,3}\d{1,4}|GRZ\s?\d{1,4}|G\d{1,4}|D\d{1,4}|ZP\d{1,4}|ZAF\d{1,4}|ZNS\d{1,4}|ZRA\d{1,4}|[A-Z]{1,6}\s?\d{0,4})$/i;
+
 const CHASSIS_ENGINE_REGEX = /^[A-HJ-NPR-Z0-9]{11,17}$/i; // 17 chars, no I, O, Q, but allow 11-17 for some imports
 
 
@@ -18,11 +19,11 @@ export const vehicleValidation = (vehicleData: VehicleDetails, currentYear: numb
     }
 
     // Plate number (if not new import)
-    if (!vehicleData.isNewImport) {
-        if (!vehicleData.plateNumber || !PLATE_REGEX.test(vehicleData.plateNumber.trim())) {
-            newErrors.plateNumber = "Enter a valid Zambian plate number (e.g. ABC1234, GRZ 1234)";
-        }
-    }
+    /*  if (!vehicleData.isNewImport) {
+         if (!vehicleData.plateNumber || !PLATE_REGEX.test(vehicleData.plateNumber.trim())) {
+             newErrors.plateNumber = "Enter a valid Zambian plate number (e.g. ABC1234, GRZ 1234)";
+         }
+     } */
     // Chassis number
     if (!vehicleData.chassisNumber || !CHASSIS_ENGINE_REGEX.test(vehicleData.chassisNumber.trim())) {
         newErrors.chassisNumber = "Enter a valid chassis number (11-17 alphanumeric, no I/O/Q)";
