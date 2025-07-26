@@ -108,6 +108,14 @@ const QuotationSummary = ({
               .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
               .join(" ")}
           </p>
+          <p>
+            <strong>Coverage:</strong>{" "}
+            {formData.coverage.period
+              .replace(/-/g, " ")
+              .split(" ")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ")}
+          </p>
         </CardContent>
       </Card>
 
