@@ -4,17 +4,17 @@ import { Button } from "../ui/button";
 import type { QuotationFormData } from "@/App";
 import { Badge } from "../ui/badge";
 
-interface QuotationSummaryProps {
+interface SummaryProps {
   formData: QuotationFormData;
   onBack: () => void;
-  handleExportImage: () => Promise<void>
+  handleExportImage: () => void
 }
 
-const QuotationSummary = ({
+const Summary = ({
   formData,
   onBack,
   handleExportImage,
-}: QuotationSummaryProps) => {
+}: SummaryProps) => {
   return (
     <div className="space-y-2">
       <h2 className="text-2xl font-semibold">Review Your Information</h2>
@@ -131,4 +131,4 @@ const QuotationSummary = ({
   );
 };
 
-export default QuotationSummary;
+export default Summary;

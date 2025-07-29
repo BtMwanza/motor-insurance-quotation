@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { COVERAGE_OPTIONS, COVERAGE_PERIOD_OPTIONS } from "@/lib/coverage-options"; // <-- import the data
@@ -35,6 +35,20 @@ const CoverageOptions = ({
     period: data.period || "",
   })
 
+  useEffect(() => {
+    // If comprehensive is selected, force annual payment
+    if (coverageData.type === "comprehensive" && coverageData.period !== "annual") {
+      const updatedData = {
+        ...coverageData,
+        period: "annual" as const,
+      }
+      setCoverageData(updatedData)
+      if (onUpdate) {
+        onUpdate({ coverage: updatedData })
+      }
+    }
+  }, [coverageData.type])
+
   const handleCardSelect = (value: string) => {
     // Toggle selection
     const updatedData = {
@@ -62,6 +76,10 @@ const CoverageOptions = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onNext({ coverage: coverageData })
+  }
+
+  const isOptionDisabled = (optionValue: string) => {
+    return coverageData.type === "comprehensive" && optionValue !== "annual"
   }
 
   return (
@@ -104,17 +122,35 @@ const CoverageOptions = ({
       <div className="space-y-4 mt-6">
         <div className="space-y-2">
           <Label>Payment Period</Label>
+          {coverageData.type === "comprehensive" && (
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg mb-4">
+              <p className="text-sm text-primary font-medium">
+                Comprehensive coverage is only available with annual payment to ensure continuous protection and
+                eligibility for No-Claim Discount benefits.
+              </p>
+            </div>
+          )}
           <div className="grid gap-3 md:grid-cols-2">
             {COVERAGE_PERIOD_OPTIONS.map(option => (
               <Card
                 key={option.value}
-                className={cn("flex space-x-2 p-4 border rounded-lg cursor-pointer transition relative", coverageData.period === option.value ? "border-primary ring-2 ring-primary" : "hover:border-primary/60")}
-                tabIndex={0}
+                className={cn(
+                  "flex space-x-2 p-4 border rounded-lg cursor-pointer transition relative",
+                  coverageData.period === option.value
+                    ? "border-primary ring-2 ring-primary"
+                    : "hover:border-primary/60",
+                  isOptionDisabled(option.value) && "opacity-50 cursor-not-allowed hover:border-border",
+                )}
+                tabIndex={isOptionDisabled(option.value) ? -1 : 0}
                 role="button"
                 aria-pressed={coverageData.period === option.value}
-                onClick={() => handlePaymentPeriodChange(option.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter" || e.key === " ") handlePaymentPeriodChange(option.value)
+                aria-disabled={isOptionDisabled(option.value)}
+                onClick={() => !isOptionDisabled(option.value) && handlePaymentPeriodChange(option.value)}
+                onKeyDown={(e) => {
+                  if (!isOptionDisabled(option.value) && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault()
+                    handlePaymentPeriodChange(option.value)
+                  }
                 }}
               >
                 {coverageData.period === option.value && (

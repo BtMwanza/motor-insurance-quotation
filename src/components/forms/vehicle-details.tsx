@@ -27,6 +27,19 @@ interface VehicleDetailsFormProps {
 
 const currentYear = new Date().getFullYear();
 
+const cleanSumInsured = (value: string): string => {
+  const cleaned = value.replace(/[^\d.]/g, "")
+  const numValue = Number.parseFloat(cleaned)
+  return isNaN(numValue) ? "" : numValue.toString()
+}
+
+const formatSumInsured = (value: string): string => {
+  const cleaned = cleanSumInsured(value)
+  if (!cleaned) return ""
+  const numValue = Number.parseFloat(cleaned)
+  return numValue.toLocaleString("en-US")
+}
+
 
 const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormProps) => {
   const [vehicleData, setVehicleData] = useState({
@@ -43,13 +56,21 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    const updatedData = { ...vehicleData, [id]: value };
-    setVehicleData(updatedData);
-    if (onUpdate) {
-      onUpdate({ vehicle: updatedData });
+    if (id === "sumInsured") {
+      const cleanedValue = cleanSumInsured(value)
+      const updatedData = { ...vehicleData, [id]: cleanedValue }
+      setVehicleData(updatedData)
+      if (onUpdate) {
+        onUpdate({ vehicle: updatedData })
+      }
+    } else {
+      const updatedData = { ...vehicleData, [id]: value }
+      setVehicleData(updatedData)
+      if (onUpdate) {
+        onUpdate({ vehicle: updatedData })
+      }
     }
     setErrors((prev) => {
       const { [id]: _, ...rest } = prev;
@@ -164,18 +185,16 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
             maxLength={10}
           />
           {errors.plateNumber && <p className="text-xs text-destructive">{errors.plateNumber}</p>}
-          {!vehicleData.isNewImport && (
-            <p className="text-xs text-muted-foreground">Required for policy issuance and road tax certificate</p>
-          )}
+
         </div>
         <div className="space-y-2">
-          <Label htmlFor="chassisNumber">Chassis Number</Label>
+          <Label htmlFor="chassisNumber">Chassis Number (no special characters)</Label>
           <Input id="chassisNumber" value={vehicleData.chassisNumber} onChange={handleChange} required maxLength={17} />
           {errors.chassisNumber && <p className="text-xs text-destructive">{errors.chassisNumber}</p>}
           <p className="text-xs text-muted-foreground">Found on vehicle registration book or vehicle body</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="engineNumber">Engine Number</Label>
+          <Label htmlFor="engineNumber">Engine Number (no special characters)</Label>
           <Input id="engineNumber" value={vehicleData.engineNumber} onChange={handleChange} required maxLength={17} />
           {errors.engineNumber && <p className="text-xs text-destructive">{errors.engineNumber}</p>}
           <p className="text-xs text-muted-foreground">Found on vehicle registration book or engine block</p>
@@ -185,7 +204,7 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
           <Input
             id="sumInsured"
             type="text"
-            value={vehicleData.sumInsured}
+            value={formatSumInsured(vehicleData.sumInsured)}
             onChange={handleChange}
             required
             min="1000"
@@ -199,12 +218,11 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
       </div>
 
       {vehicleData.isNewImport && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-medium text-amber-800 mb-2">New Import Vehicle Notice</h3>
-          <ul className="text-sm text-amber-700 space-y-1">
+        <div className="p-4 bg-secondary/30 border border-secondary/20 rounded-lg">
+          <h3 className="font-medium text-secondary-foreground mb-2">New Import Vehicle Notice</h3>
+          <ul className="text-sm text-secondary-foreground space-y-1">
             <li>• Temporary cover will be issued using chassis and engine numbers</li>
             <li>• You must update your policy with the plate number once registered with RTSA</li>
-            <li>• Road tax certificate cannot be obtained without valid registration</li>
             <li>• Policy will be suspended if registration is not completed within 30 days</li>
           </ul>
         </div>

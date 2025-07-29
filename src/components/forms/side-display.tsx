@@ -5,12 +5,12 @@ import { CheckCircle, Circle, Car, User, Shield, FileText, Percent, AlertTriangl
 import type { QuotationFormData } from "@/App"
 
 
-interface SideQuotationProps {
+interface SideDisplayProps {
     formData: QuotationFormData
     currentStep: number
 }
 
-export default function SideQuotation({ formData, currentStep }: SideQuotationProps) {
+export default function SideDisplay({ formData, currentStep }: SideDisplayProps) {
 
 
 
@@ -27,7 +27,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 basePremiumRate = 0.02
                 break
             case "third-party-fire-theft":
-                basePremiumRate = 0.035
+                basePremiumRate = 0.03
                 break
             case "comprehensive":
                 basePremiumRate = 0.05
@@ -45,6 +45,8 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                 premium *= 2.5
                 break
             case "personal":
+                premium *= 1.1
+                break
             default:
                 break
         }
@@ -226,14 +228,14 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
     }
 
     return (
-        <Card id="quotation-card" className="w-full h-full">
+        <Card className="w-full h-full">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 justify-between">
                     <div className="flex items-center gap-2">
                         <Shield className="h-5 w-5 text-primary" />
                         Your Quote
                     </div>
-                    {new Date().toLocaleDateString('en-GB')}
+
                 </CardTitle>
                 <CardDescription>Real-time calculation based on your information. Complete steps to get the final premium</CardDescription>
             </CardHeader>
@@ -282,7 +284,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                     ) : (
                         <>
                             <div className="text-2xl font-medium text-muted-foreground">ZMW ---</div>
-                            <div className="text-sm text-muted-foreground mt-1">Enter vehicle value to see estimate</div>
+                            <div className="text-sm text-muted-foreground mt-1">Enter vehicle value to see your premium</div>
                         </>
                     )}
                 </div>
@@ -382,7 +384,7 @@ export default function SideQuotation({ formData, currentStep }: SideQuotationPr
                                     </div>
                                 )}
                                 {formData.coverage.period === "annual" && (
-                                    <div className="flex justify-between text-secondary">
+                                    <div className="flex justify-between">
                                         <span>Annual Payment Discount</span>
                                         <span>-2%</span>
                                     </div>

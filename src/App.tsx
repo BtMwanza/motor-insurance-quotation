@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { Card, CardContent } from './components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import VehicleTypePicker from './components/forms/vehicle-type-picker';
 import VehicleDetails from './components/forms/vehicle-details';
 import OwnerDetails from './components/forms/owner-details';
-import QuotationSummary from './components/forms/quotation-summary';
+import Summary from './components/forms/summary';
 import CoverageOptions from './components/forms/coverage-options';
-import SideQuotation from './components/forms/side-quotation';
+import SideDisplay from './components/forms/side-display';
 import { Car, FileText, User, ShieldCheck, ListChecks } from "lucide-react"; // Example icons
 import html2canvas from 'html2canvas-pro';
+import Quotation from './components/forms/quotation';
 
 export interface QuotationFormData {
   vehicleType: { type: "personal" | "commercial" | "taxi" | "" }
@@ -31,7 +32,8 @@ export interface QuotationFormData {
 }
 
 function App() {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(0);
+  const [isHidden, setIsHidden] = useState(true);
   const [formData, setFormData] = useState<QuotationFormData>({
     vehicleType: { type: "" },
     vehicle: {
@@ -76,24 +78,36 @@ function App() {
   ];
 
   // download image
-  const handleExportImage = async () => {
+  useEffect(() => {
+    if (!isHidden) {
+      const captureAndDownload = async () => {
+        try {
+          const card = document.getElementById("quotation-card");
+          if (card) {
+            const canvas = await html2canvas(card);
+            const link = document.createElement("a");
+            link.download = "quotation.png";
+            link.href = canvas.toDataURL();
+            link.click();
+          }
+        } catch (error) {
+          console.log("Error downloading image:", error);
+        } finally {
+          setIsHidden(true);
+        }
+      };
 
-    try {
-      const card = document.getElementById("quotation-card");
-      if (card) {
-        const canvas = await html2canvas(card);
-        const link = document.createElement("a");
-        link.download = "quotation.png";
-        link.href = canvas.toDataURL();
-        link.click();
-      }
-    } catch (error) {
-      console.log("Error downloading image:", error);
+      captureAndDownload();
     }
+  }, [isHidden]);
+
+
+  const handleExportImage = () => {
+    setIsHidden(false);
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="flex flex-col min-h-screen items-center justify-center p-4 gap-4">
       <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card className="h-full">
@@ -145,7 +159,7 @@ function App() {
                   />
                 </TabsContent>
                 <TabsContent value="4" className="mt-6">
-                  <QuotationSummary
+                  <Summary
                     formData={formData}
                     onBack={handleBack}
                     handleExportImage={handleExportImage}
@@ -159,10 +173,12 @@ function App() {
 
         <div className="lg:col-span-1">
           <div className="sticky top-4">
-            <SideQuotation formData={formData} currentStep={step} />
+            <SideDisplay formData={formData} currentStep={step} />
           </div>
         </div>
       </div>
+
+      {!isHidden && <Quotation formData={formData} />}
     </main>
   );
 }
