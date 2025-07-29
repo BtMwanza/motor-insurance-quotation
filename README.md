@@ -7,9 +7,8 @@ This application provides the user with a motor insurance quotaion based on the 
 | Coverage Type              | Premium Rate        |
 |----------------------------|---------------------|
 | Third Party Only           | 2% of sum insured   |
-| Third Party Fire & Theft   | 3.5% of sum insured |
+| Third Party Fire & Theft   | 3% of sum insured |
 | Comprehensive              | 5% of sum insured   |
-| Road Traffic Act Only      | 5% of sum insured   |
 
 
 **Base premium = Sum Insured × Premium Rate**
