@@ -1,5 +1,6 @@
 import type { OwnerDetails } from "@/components/forms/owner-details";
 import type { VehicleDetails } from "@/components/forms/vehicle-details";
+import { parseSumInsuredForValidation } from "./utils";
 
 const PLATE_REGEX = /^(?:[A-Z]{1,3}\d{1,4}|GRZ\s?\d{1,4}|G\d{1,4}|D\d{1,4}|ZP\d{1,4}|ZAF\d{1,4}|ZNS\d{1,4}|ZRA\d{1,4}|[A-Z]{1,6}\s?\d{0,4})$/i;
 
@@ -33,8 +34,13 @@ export const vehicleValidation = (vehicleData: VehicleDetails, currentYear: numb
         newErrors.engineNumber = "Enter a valid engine number (11-17 alphanumeric, no I/O/Q)";
     }
     // Sum insured
-    if (!vehicleData.sumInsured || isNaN(Number(vehicleData.sumInsured)) || Number(vehicleData.sumInsured) < 1000) {
-        newErrors.sumInsured = "Enter a valid sum insured (minimum ZMW 1,000)";
+    const sumInsuredValue = parseSumInsuredForValidation(vehicleData.sumInsured)
+    if (!vehicleData.sumInsured.trim()) {
+        newErrors.sumInsured = "Please enter the sum insured amount"
+    } else if (sumInsuredValue === 0) {
+        newErrors.sumInsured = "Please enter a valid numeric amount"
+    } else if (sumInsuredValue < 1000) {
+        newErrors.sumInsured = "Minimum sum insured is ZMW 1,000"
     }
     // Make
     if (!vehicleData.make) {

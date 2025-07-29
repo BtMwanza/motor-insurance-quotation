@@ -6,6 +6,7 @@ import { VEHICLE_MAKES } from "@/lib/vehicles";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { vehicleValidation } from "@/lib/validation";
+import { cleanSumInsured, formatSumInsured } from "@/lib/utils";
 
 export interface VehicleDetails {
   make: string
@@ -27,18 +28,7 @@ interface VehicleDetailsFormProps {
 
 const currentYear = new Date().getFullYear();
 
-const cleanSumInsured = (value: string): string => {
-  const cleaned = value.replace(/[^\d.]/g, "")
-  const numValue = Number.parseFloat(cleaned)
-  return isNaN(numValue) ? "" : numValue.toString()
-}
 
-const formatSumInsured = (value: string): string => {
-  const cleaned = cleanSumInsured(value)
-  if (!cleaned) return ""
-  const numValue = Number.parseFloat(cleaned)
-  return numValue.toLocaleString("en-US")
-}
 
 
 const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormProps) => {
@@ -207,10 +197,7 @@ const VehicleDetails = ({ data, onNext, onBack, onUpdate }: VehicleDetailsFormPr
             value={formatSumInsured(vehicleData.sumInsured)}
             onChange={handleChange}
             required
-            min="1000"
             placeholder="e.g. 150000"
-            inputMode="numeric"
-            pattern="[0-9]*"
           />
           {errors.sumInsured && <p className="text-xs text-destructive">{errors.sumInsured}</p>}
           <p className="text-xs text-muted-foreground">Current market value of your vehicle</p>

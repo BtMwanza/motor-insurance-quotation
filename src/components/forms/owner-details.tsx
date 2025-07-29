@@ -35,25 +35,25 @@ const OwnerDetails = ({ data, onNext, onBack, onUpdate }: OwnerDetailsFormProps)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
-    const updatedData = { ...ownerData, [id]: value }
-    setOwnerData(updatedData)
-    if (onUpdate) {
-      onUpdate({ owner: updatedData })
+    if (id === "age" || id === "licenseYears" || 'previousClaims') {
+      const numericValue = value.replace(/\D/g, "")
+      const updatedData = { ...ownerData, [id]: numericValue }
+      setOwnerData(updatedData)
+      if (onUpdate) {
+        onUpdate({ owner: updatedData })
+      }
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[id];
+        return newErrors;
+      })
+      return
     }
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[id];
-      return newErrors;
-    })
   }
 
   const handleRadioChange = (value: string) => {
     const updatedData = { ...ownerData, claims: value as "yes" | "no" }
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors.previousClaims;
-      return newErrors;
-    })
+    setOwnerData(updatedData)
     if (onUpdate) {
       onUpdate({ owner: updatedData })
     }
@@ -148,11 +148,10 @@ const OwnerDetails = ({ data, onNext, onBack, onUpdate }: OwnerDetailsFormProps)
             <Label htmlFor="previousClaims">Number of Claims (Last 3 Years)</Label>
             <Input
               id="previousClaims"
-              type="number"
+              type="text"
               value={ownerData.previousClaims}
               onChange={handleChange}
               min="1"
-              max="10"
             />
             {errors.previousClaims && <p className="text-xs text-destructive">{errors.previousClaims}</p>}
           </div>

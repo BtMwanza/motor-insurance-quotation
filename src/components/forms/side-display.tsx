@@ -242,7 +242,7 @@ export default function SideDisplay({ formData, currentStep }: SideDisplayProps)
             <CardContent className="space-y-4">
                 {/* Quote Amount */}
                 <div className="text-center p-6 bg-background rounded-lg border border-border">
-                    {hasMinimumData ? (
+                    {currentStep === 4 ? (
                         <>
                             <div className="text-3xl font-bold text-primary">
                                 ZMW {quote.amount.toLocaleString("en-US", { maximumFractionDigits: 0 })}
