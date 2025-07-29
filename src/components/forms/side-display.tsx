@@ -353,7 +353,7 @@ export default function SideDisplay({ formData, currentStep }: SideDisplayProps)
                                 )}
                                 {formData.owner.age && (
                                     <div className="flex justify-between">
-                                        <span>owner Profile</span>
+                                        <span>Owner Profile</span>
                                         <span>
                                             {Number.parseInt(formData.owner.age) < 21
                                                 ? "Young owner"
