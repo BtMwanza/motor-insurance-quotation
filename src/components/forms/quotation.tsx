@@ -25,14 +25,13 @@ interface QuotationProps {
 }
 
 export default function Quotation({ formData }: QuotationProps) {
-    // Calculate quote (same logic as other components)
+
     const calculateQuote = () => {
         const sumInsured = Number.parseInt(formData.vehicle.sumInsured) || 0
         if (sumInsured === 0) return { amount: 0, period: "annual", adminFee: 0 }
 
-        // Base premium rates as percentage of sum insured
-        let basePremiumRate = 0.03 // 3% for third-party-only
 
+        let basePremiumRate = 0.03
         // Adjust base rate based on coverage type
         switch (formData.coverage.type) {
             case "third-party-only":
@@ -63,12 +62,12 @@ export default function Quotation({ formData }: QuotationProps) {
                 break
         }
 
-        // New import surcharge (temporary cover is more expensive)
+
         if (formData.vehicle.isNewImport) {
-            premium *= 1.2 // 20% surcharge for temporary cover
+            premium *= 1.2
         }
 
-        // Owner/owner age and experience adjustments
+        // Owner's age and experience adjustments
         const age = Number.parseInt(formData.owner.age) || 0
         const licenseYears = Number.parseInt(formData.owner.licenseYears) || 0
 
@@ -138,7 +137,7 @@ export default function Quotation({ formData }: QuotationProps) {
                 break
             case "annual":
                 periodMultiplier = 1 // Full annual premium
-                // Optional: small discount for paying annually (2-5%)
+
                 finalPremium = premium * 0.98 // 2% discount
                 break
             default:
@@ -273,12 +272,12 @@ export default function Quotation({ formData }: QuotationProps) {
                         </CardContent>
                     </Card>
 
-                    {/* owner Information */}
+                    {/* Owner Information */}
                     <Card>
                         <CardHeader className="">
                             <CardTitle className="flex items-center gap-2 text-lg">
                                 <User className="h-5 w-5" />
-                                owner Information
+                                Owner Information
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
